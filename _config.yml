@@ -71,11 +71,18 @@ pagination_dir: page
 ## Themes: https://hexo.io/themes/
 theme: next
 
-search:
-  path: search.xml
-  field: post
-  format: html
-  limit: 10000
+# search:
+#   path: search.xml
+#   field: post
+#   format: html
+#   limit: 10000
+
+algolia:
+  applicationID: '364W5SA3C2'
+  apiKey: '048bcaaec0f9fa2b00182a946c263713'
+  adminApiKey: '28cb5043471606881f79987a6bf9e480'
+  indexName: 'truechuan_blog'
+  chunkSize: 5000
 
 # Deployment
 ## Docs: https://hexo.io/docs/deployment.html
