@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<search>
+  
+    
+    <entry>
+      <title><![CDATA[Hexo + Github Pages 搭建博客]]></title>
+      <url>%2F2017%2F01%2F05%2FHexo-Github-Pages-%E6%90%AD%E5%BB%BA%E5%8D%9A%E5%AE%A2%2F</url>
+      <content type="text"></content>
+    </entry>
+
+    
+    <entry>
+      <title><![CDATA[Hello World]]></title>
+      <url>%2F2017%2F01%2F04%2Fhello-world%2F</url>
+      <content type="text"><![CDATA[Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub. Quick StartCreate a new post1$ hexo new "My New Post" More info: Writing Run server1$ hexo server More info: Server Generate static files1$ hexo generate More info: Generating Deploy to remote sites1$ hexo deploy More info: Deployment]]></content>
+    </entry>
+
+    
+    <entry>
+      <title><![CDATA[基于多个实例的redis连接池]]></title>
+      <url>%2F2015%2F11%2F03%2F%E5%9F%BA%E4%BA%8E%E5%A4%9A%E4%B8%AA%E5%AE%9E%E4%BE%8B%E7%9A%84redis%E8%BF%9E%E6%8E%A5%E6%B1%A0%2F</url>
+      <content type="text"><![CDATA[redis截至目前为止最新版本为3.0.5稳定版，对于集群的支持进一步稳定，对于低版本的redis，可以通过代理形式和一致性hash算法实现分布式部署。针对各个语言，redis均有很多优秀的客户端程序，在java中有Jedis这个jar，以下实现均以此jar文件进行封装开发。现在下面的项目并不是针对集群而言，而是针对多个redis实例的分库而言，第一次github上代码～基于2.7.3版本jedis.jar,写起来还是发现了与之前2.4版本的一些变化。其中发现两点： 底层连接池版本升级，导致一些参数配置变化。jedis2.1版本连接池配置通过继承org.apache.commons.pool.impl.GenericObjectPool.Config该类实现： public class JedisPoolConfig extends Config 在2.7.3版本中这样实现 public class JedisPoolConfig extends GenericObjectPoolConfig public class GenericObjectPoolConfig extends BaseObjectPoolConfig public abstract class BaseObjectPoolConfig implements Cloneable 有此可见，JedisPoolConfig是实现了一个接口而非继承，使得更加抽象，现在也仅理解至此。 对于Redis连接关闭更加方便，在老版本中关闭连接需要使用returnResource(jedis)该方法，在获取连接异常是使用returnBrokenResource(jedis)来关闭连接。 void closeRedis(){ JedisPool pool = new JedisPool("host"); Jedis jedis = null; try { jedis = pool.getResource(); pool.returnResource(jedis); } catch (Exception e) { if (jedis != null) { pool.returnBrokenResource(jedis); } } } 在新版源码中，returnResource(jedis)，returnBrokenResource(jedis)均被废弃， /** * @deprecated starting from Jedis 3.0 this method won't exist. * Resouce cleanup should be done * using @see {@link redis.clients.jedis.Jedis#close()} */ @Deprecated public void returnResource(final Jedis resource) { if (resource != null) { try { resource.resetState(); returnResourceObject(resource); } catch (Exception e) { returnBrokenResource(resource); throw new JedisException("Could not return the resource to the pool", e); } } } /** * @deprecated starting from Jedis 3.0 this method won't exist. * Resouce cleanup should be done * using @see {@link redis.clients.jedis.Jedis#close()} */ @Deprecated public void returnBrokenResource(final Jedis resource) { if (resource != null) { returnBrokenResourceObject(resource); } } 在新版本的jedis中，对连接关闭更加方便，直接调用close(), @Override public void close() { if (dataSource != null) { if (client.isBroken()) { this.dataSource.returnBrokenResource(this); } else { this.dataSource.returnResource(this); } } else { client.close(); } }]]></content>
+    </entry>
+
+    
+    <entry>
+      <title><![CDATA[JAVA面试汇总]]></title>
+      <url>%2F2015%2F10%2F25%2FJAVA%E9%9D%A2%E8%AF%95%E6%B1%87%E6%80%BB%2F</url>
+      <content type="text"><![CDATA[现在总结一下关于java面试的一些面试问题。找了很久，找到一个前辈总结的面试精华传统IT转互联网面试经验分享。同时，强烈推荐海子- Java并发编程。先写一下今天遇到的一道算法面试题，题目如下：给定一个存放整数的数组，重新排列数组使得数组左边为奇数，右边为偶数。要求：空间复杂度O(1)，时间复杂度为O（n）伪代码如下，左右开弓，完美解决～： m = 0 n= 1en-1 while i&lt; len-1 &amp;&amp; m &lt;= n: if array[m] 偶数 &amp;&amp; array[n] 偶数: n = len-1-i else if array[m] 奇数 &amp;&amp; array[n] 奇数： m = i+1 else if m 奇数 &amp;&amp; n偶数： i++ m = i n = array[len-1-i] else if m 偶数 &amp;&amp; n 奇数: exchange array[m] array[n] i++ m = i n = array[len-1-i] java关键字作用域关键字 关键字 类内部 本包 子类 外部包 public √ √ √ √ protectedl-scale √ √ √ × default √ √ × × private √ × × × 对于public修饰符，它具有最大的访问权限，可以访问任何一个在CLASSPATH下的类、接口、异常等。它往往用于对外的情况，也就是对象或类对外的一种接口的形式。 对于protected修饰符，它主要的作用就是用来保护子类的。它的含义在于子类可以用它修饰的成员，其他的不可以，它相当于传递给子类的一种继承的东西。 对于default来说，有点的时候也成为friendly（友员），它是针对本包访问而设计的，任何处于本包下的类、接口、异常等，都可以相互访问，即使是父类没有用protected修饰的成员也可以。 对于private来说，它的访问权限仅限于类的内部，是一种封装的体现，例如，大多数的成员变量都是修饰符为private的，它们不希望被其他任何外部的类访问。 注意：Java的访问控制是停留在编译层的，也就是它不会在.class文件中留下任何的痕迹，只在编译的时候进行访问控制的检查。其实，通过反射的手段，是可以访问任何包下任何类中的成员，例如，访问类的私有成员也是可能的。从中可以扩展两个标题，即java的生命周期，java类反射。区别 public：可以被所有其他类所访问。 private：只能被自己访问和修改。 protected：自身，子类及同一个包中类可以访问。 default（默认）：同一包中的类可以访问，声明时没有加修饰符，认为是friendly。 static|final关键字 static可以用来修饰类的成员方法、类的成员变量，另外可以编写static代码块来优化程序性能，不需要依赖于对象来进行访问，只要类被加载了，就可以通过类名去进行访问。Java中的static关键字解析 final关键字可以用来修饰类、方法和变量（包括成员变量和局部变量）。当用final修饰一个类时，表明这个类不能被继承。String的定义 public final class String {} String的值是可改变的，其实是String的地址是没有改变，但是指针的位置发生改变。初探Java字符串。 final修饰变量，如果是基本数据类型的变量，则其数值一旦在初始化之后便不能更改；如果是引用类型的变量，则在对其初始化之后便不能再让其指向另一个对象。浅析Java中的final关键字 synchronized|volatile关键字 synchronized用来修饰一个方法或者一个代码块的时候，能够保证在同一时刻最多只有一个线程执行该段代码。Java并发编程：synchronized 注意 当一个线程正在访问一个对象的synchronized方法，那么其他线程不能访问该对象的其他synchronized方法。这个原因很简单，因为一个对象只有一把锁，当一个线程获取了该对象的锁之后，其他线程无法获取该对象的锁，所以无法访问该对象的其他synchronized方法。 当一个线程正在访问一个对象的synchronized方法，那么其他线程能访问该对象的非synchronized方法。这个原因很简单，访问非synchronized方法不需要获得该对象的锁，假如一个方法没用synchronized关键字修饰，说明它不会使用到临界资源，那么其他线程是可以访问这个方法的。 如果一个线程A需要访问对象object1的synchronized方法fun1，另外一个线程B需要访问对象object2的synchronized方法fun1，即使object1和object2是同一类型），也不会产生线程安全问题，因为他们访问的是不同的对象，所以不存在互斥问题。 并且如果一个线程执行一个对象的非static synchronized方法，另外一个线程需要执行这个对象所属类的static synchronized方法，此时不会发生互斥现象，因为访问static synchronized方法占用的是类锁，而访问非static synchronized方法占用的是对象锁，所以不存在互斥现象。 volatile关键字是与Java的内存模型有关。编译器为了加快程序运行的速度,对一些变量的写操作会先在寄存器或者是CPU缓存上进行,最后才写入内存.而在这个过程,变量的新值对其他线程是不可见的.而volatile的作用就是使它修饰的变量的读写操作都必须在内存中进行。Java并发编程：volatile关键字解析 volatile与synchronized volatile本质是在告诉jvm当前变量在寄存器中的值是不确定的,需要从主存中读取,synchronized则是锁定当前变量,只有当前线程可以访问该变量,其他线程被阻塞住. volatile仅能使用在变量级别,synchronized则可以使用在变量,方法. volatile仅能实现变量的修改可见性,但不具备原子特性,而synchronized则可以保证变量的修改可见性和原子性. volatile不会造成线程的阻塞,而synchronized可能会造成线程的阻塞. volatile标记的变量不会被编译器优化,而synchronized标记的变量可以被编译器优化.java对象java数据结构java多线程]]></content>
+    </entry>
+
+    
+  
+  
+</search>
